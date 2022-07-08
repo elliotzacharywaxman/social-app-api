@@ -19,13 +19,33 @@ const thoughtController = {
     // Create a thought
     createThought(req, res) {
         Thought.create(req.body)
-            .then((thought) => {
-                return Post.findOneAndUpdate(
-                    { _id: req.body.postId },
-                    { $push: { thoughts: thought._id } },
-                    { new: true }
-                );
-            })
+            .then((post) =>
+                !post
+                    ? res
+                        .status(404)
+                        .json({ message: 'thought created, but no posts with this ID' })
+                    : res.json({ message: 'thought created' })
+            )
+            .catch((err) => {
+                console.error(err);
+            });
+    },
+    // Add a reaction
+    addReaction(req, res) {
+        Thought.findOneAndUpdate({ _id: req.params.thoughtId }, { $addToSet: { reactions: req.body } }, { runValidators: true })
+            .then((reaction) =>
+                !reaction
+                    ? res
+                        .status(404)
+                        .json({ message: 'thought created, but no posts with this ID' })
+                    : res.json({ message: 'thought created' })
+            )
+            .catch((err) => {
+                console.error(err);
+            });
+    },
+    createThought(req, res) {
+        Thought.create(req.body)
             .then((post) =>
                 !post
                     ? res
